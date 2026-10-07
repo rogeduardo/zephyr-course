@@ -1,0 +1,6 @@
+board:
+  name: scratch_board
+  full_name: Scratch Board
+  vendor: myself
+  socs:
+    - name: stm32f401xe

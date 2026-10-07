@@ -3,8 +3,8 @@
 #include <st/f4/stm32f401r(d-e)tx-pinctrl.dtsi>
 
 / {
-	model = "Custom Board";
-	compatible = "myself";
+	model = "Scratch Board";
+	compatible = "myself,scratch_board";
 
 	chosen {
 		zephyr,console = &usart2;
