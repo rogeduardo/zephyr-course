@@ -1,0 +1,7 @@
+description: Our Sensor Driver for Homework 6.1
+compatible: "our,driver"
+include: base.yaml
+properties:
+  led-gpios:
+    type: phandle-array
+    required: true

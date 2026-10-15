@@ -1,0 +1,4 @@
+config OUR_DRIVER
+    bool "Our Sensor Driver"
+    default y
+    depends on DT_HAS_OUR_DRIVER_ENABLED

@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_OUR_DRIVER our_driver)

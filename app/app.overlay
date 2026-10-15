@@ -1,5 +1,11 @@
 / {
     aliases {
-        app-led = &green_led_0;
+        app-led = &green_led_2;
+    };
+
+    our_driver0: our_driver {
+        compatible = "our,driver";
+        led-gpios = < &gpioa 0x5 0x0>;
+        status = "okay";
     };
 };
