@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/sensor.h>
+#include "our_driver.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
@@ -19,7 +20,8 @@ int main(void)
         k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
         sensor_channel_get(dev, SENSOR_CHAN_ALL, NULL);
         LOG_INF("Driver LED state: OFF");
-        k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);        
+        k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
+        LOG_INF("LED was turned on: %d time(s)", our_driver_get_count(dev) );
     }
     return 0;
 }
