@@ -11,6 +11,7 @@
 
 #include <zephyr/ztest.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include "ring_buf.h"
 
@@ -43,11 +44,13 @@ ZTEST(ring_buf_init, test_fresh_state)
 
 ZTEST(ring_buf_init, test_reinit_clears_state)
 {
-	/* TODO(l8-task1): Push a value, call rb_init(4) again, then
-	 * verify the buffer is empty and count is 0.
+	/* Push a value, call rb_init(4) again, then verify the buffer is empty and count is 0.
 	 * See TEST_SPEC.md "Suite ring_buf_init" #2.
 	 */
-	ztest_test_skip();
+	zassume_true(rb_push(1) == 0);
+	zassume_true (rb_init(4) == 0);
+	zassert_true(rb_is_empty(), "Fresh buffer must be empty");
+	zassert_equal (rb_count(), 0, "Fresh buffer count must be 0" );
 }
 
 /*
@@ -59,30 +62,48 @@ ZTEST(ring_buf_init, test_reinit_clears_state)
  */
 ZTEST_SUITE(ring_buf_push_pop, NULL, NULL, before, NULL, NULL);
 
+/* Push a value, pop this value and buffer must be empty after */
 ZTEST(ring_buf_push_pop, test_single_push_pop)
-{
-	/* TODO(l8-task1): rb_push(42), rb_pop(&v) -> v == 42, buffer empty after.
-	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #1.
-	 */
-	ztest_test_skip();
+{	
+	int value = 42;
+	int ret_value;
+
+	zassert_true(rb_push(value) == 0, "Push value into buffer");
+	zassert_true(rb_pop(&ret_value) == 0, "Check the value is correct");
+	zassert_equal(ret_value, value, "Value returned from buffer should be %d", value);
+	zassert_true(rb_is_empty(), "Buffer must be empty");
 }
 
+/* Push three values, pop them all and verify the order and the buffer must be empty in the end*/
 ZTEST(ring_buf_push_pop, test_fifo_order)
 {
-	/* TODO(l8-task1): rb_push(1), rb_push(2), rb_push(3); pop three times
-	 * and verify the values come out as 1, 2, 3 in that order.
-	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #2.
-	 */
-	ztest_test_skip();
+	int value[3] = {1, 2, 3};
+	int ret_value;
+	
+	for ( int i=0; i<3 ; i++ )
+		zassume_true(rb_push(value[i]) == 0, "Fill the buffer");
+
+	for ( int i=0; i<3 ; i++ )
+	{
+		zassume_true(rb_pop(&ret_value) == 0);
+		zassert_equal(ret_value, value[i], "Value returned from buffer must be %d", value[i]);
+	}
+	zassert_true(rb_is_empty(), "Buffer must be empty");
 }
 
+/* Fill the buffer to its capacity of 4, then push
+ * one more value -> -ENOSPC.
+ */
 ZTEST(ring_buf_push_pop, test_push_full_returns_enospc)
 {
-	/* TODO(l8-task1): Fill the buffer to its capacity of 4, then push
-	 * one more value -> -ENOSPC.
-	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #3.
-	 */
-	ztest_test_skip();
+	int value[4] = {1, 2, 3, 4};
+
+	for ( int i=0; i<4 ; i++ )
+		zassume_true(rb_push(value[i]) == 0, "Fill the buffer");
+
+	zassert_true (rb_is_full(), "Buffer must be full" );
+	zassert_equal (rb_push(99), -ENOSPC, "Return a error because a buffer is full");
+	zassert_equal (rb_count(), 4, "Buffer size must be 4");
 }
 
 /*
@@ -94,27 +115,40 @@ ZTEST(ring_buf_push_pop, test_push_full_returns_enospc)
  */
 ZTEST_SUITE(ring_buf_boundaries, NULL, NULL, before, NULL, NULL);
 
+/* Push one value, peek it twice and check the buffer size
+ */
 ZTEST(ring_buf_boundaries, test_peek_does_not_consume)
 {
-	/* TODO(l8-task1): rb_push(7); rb_peek(&v) -> v == 7; rb_peek(&v) again
-	 * -> v == 7; rb_count() still == 1.
-	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #1.
-	 */
-	ztest_test_skip();
+	int value = 7;
+	int ret_value;	
+
+	zassume_true (rb_push(value) == 0);
+	zassume_true (rb_peek(&ret_value) == 0);
+	zassert_equal (ret_value, value, "Returned value %d must be equal to pushed value %d", ret_value, value);
+	ret_value = 0;
+	zassume_true (rb_peek(&ret_value) == 0);
+	zassert_equal (ret_value, value, "Returned value %d must be equal to pushed value %d", ret_value, value);
+	zassert_equal (rb_count(), 1, "Buffer size must be 1");
 }
 
+/* Pop NULL
+ * See TEST_SPEC.md "Suite ring_buf_boundaries" #2.
+ */
 ZTEST(ring_buf_boundaries, test_pop_null_returns_einval)
 {
-	/* TODO(l8-task1): rb_pop(NULL) -> -EINVAL.
-	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #2.
-	 */
-	ztest_test_skip();
+	zassert_equal (rb_pop(NULL), -EINVAL, "Pop NULL must return EINVAL error");
 }
 
+/* 
+ * Push full buffer capacity and check if rb_is_full is true
+ */
 ZTEST(ring_buf_boundaries, test_is_full_after_fill)
 {
-	/* TODO(l8-task1): push 4 values -> rb_is_full() == true, rb_count() == 4.
-	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #3.
-	 */
-	ztest_test_skip();
+	int value[4] = {1, 2, 3, 4};
+
+	for ( int i=0; i<4 ; i++ )
+		zassume_true( rb_push (value[i]) == 0, "Fill the buffer" );
+
+	zassert_true ( rb_is_full(), "Buffer at full capacity" );
+	zassert_equal ( rb_count(), 4, "Buffer size must be 4" );
 }
