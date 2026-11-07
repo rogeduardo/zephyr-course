@@ -1,2 +1,0 @@
-"cmsis_6":"/home/rogerio/Projetos/iomico-course/deps/modules/hal/cmsis_6":"${ZEPHYR_CMSIS_6_CMAKE_DIR}"
-"hal_stm32":"/home/rogerio/Projetos/iomico-course/deps/modules/hal/stm32":"/home/rogerio/Projetos/iomico-course/deps/modules/hal/stm32"
